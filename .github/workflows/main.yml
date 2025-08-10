@@ -49,4 +49,5 @@ jobs:
             -scheme DiffValueSubjectExamples
             -configuration debug
             -destination 'platform=iOS Simulator,name=iPhone 16'
+            -package-path Examples/DiffValueSubjectExamples
             clean build
