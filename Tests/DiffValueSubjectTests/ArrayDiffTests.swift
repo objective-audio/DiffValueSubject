@@ -1,132 +1,133 @@
 import Combine
-import XCTest
+import Testing
 
 @testable import DiffValueSubject
 
-final class ArrayDiffTests: XCTestCase {
-
-    var cancellables: Set<AnyCancellable>!
-
-    override func setUp() {
-        super.setUp()
-        cancellables = Set<AnyCancellable>()
-    }
-
-    override func tearDown() {
-        cancellables = nil
-        super.tearDown()
-    }
-
-    func testArrayInsert() {
+@Suite struct ArrayDiffTests {
+    
+    @Test("Array insert test")
+    func testArrayInsert() throws {
         let subject = DiffValueSubject<[String], ArrayDiff<String>>(["A", "B"])
         var receivedUpdates: [DiffValueUpdate<[String], ArrayDiff<String>>] = []
 
-        subject.sink { update in
+        let cancellable = subject.sink { update in
             receivedUpdates.append(update)
-        }.store(in: &cancellables)
+        }
 
         subject.insert("C", at: 1)
 
-        XCTAssertEqual(receivedUpdates.count, 2)
+        #expect(receivedUpdates.count == 2)
 
         // Initial subscription
-        XCTAssertEqual(receivedUpdates[0].value, ["A", "B"])
+        #expect(receivedUpdates[0].value == ["A", "B"])
         if case .subscription = receivedUpdates[0].updateType {
             // Expected
         } else {
-            XCTFail("First update should be subscription")
+            throw TestError("First update should be subscription")
         }
 
         // Insert operation
-        XCTAssertEqual(receivedUpdates[1].value, ["A", "C", "B"])
+        #expect(receivedUpdates[1].value == ["A", "C", "B"])
         if case .change(let diff) = receivedUpdates[1].updateType,
             case .insert(let index, let element) = diff
         {
-            XCTAssertEqual(index, 1)
-            XCTAssertEqual(element, "C")
+            #expect(index == 1)
+            #expect(element == "C")
         } else {
-            XCTFail("Second update should be insert diff")
+            throw TestError("Second update should be insert diff")
         }
+        
+        cancellable.cancel()
     }
 
-    func testArrayRemove() {
+    @Test("Array remove test")
+    func testArrayRemove() throws {
         let subject = DiffValueSubject<[String], ArrayDiff<String>>(["A", "B", "C"])
         var receivedUpdates: [DiffValueUpdate<[String], ArrayDiff<String>>] = []
 
-        subject.sink { update in
+        let cancellable = subject.sink { update in
             receivedUpdates.append(update)
-        }.store(in: &cancellables)
+        }
 
         subject.remove(at: 1)
 
-        XCTAssertEqual(receivedUpdates.count, 2)
-        XCTAssertEqual(receivedUpdates[1].value, ["A", "C"])
+        #expect(receivedUpdates.count == 2)
+        #expect(receivedUpdates[1].value == ["A", "C"])
 
         if case .change(let diff) = receivedUpdates[1].updateType,
             case .remove(let index, let element) = diff
         {
-            XCTAssertEqual(index, 1)
-            XCTAssertEqual(element, "B")
+            #expect(index == 1)
+            #expect(element == "B")
         } else {
-            XCTFail("Should be remove diff")
+            throw TestError("Should be remove diff")
         }
+        
+        cancellable.cancel()
     }
 
-    func testArrayMove() {
+    @Test("Array move test")
+    func testArrayMove() throws {
         let subject = DiffValueSubject<[String], ArrayDiff<String>>(["A", "B", "C"])
         var receivedUpdates: [DiffValueUpdate<[String], ArrayDiff<String>>] = []
 
-        subject.sink { update in
+        let cancellable = subject.sink { update in
             receivedUpdates.append(update)
-        }.store(in: &cancellables)
+        }
 
         subject.move(from: 0, to: 2)
 
-        XCTAssertEqual(receivedUpdates.count, 2)
-        XCTAssertEqual(receivedUpdates[1].value, ["B", "C", "A"])
+        #expect(receivedUpdates.count == 2)
+        #expect(receivedUpdates[1].value == ["B", "C", "A"])
 
         if case .change(let diff) = receivedUpdates[1].updateType,
             case .move(let from, let to, let element) = diff
         {
-            XCTAssertEqual(from, 0)
-            XCTAssertEqual(to, 2)
-            XCTAssertEqual(element, "A")
+            #expect(from == 0)
+            #expect(to == 2)
+            #expect(element == "A")
         } else {
-            XCTFail("Should be move diff")
+            throw TestError("Should be move diff")
         }
+        
+        cancellable.cancel()
     }
 
-    func testArrayUpdate() {
+    @Test("Array update test")
+    func testArrayUpdate() throws {
         let subject = DiffValueSubject<[String], ArrayDiff<String>>(["A", "B", "C"])
         var receivedUpdates: [DiffValueUpdate<[String], ArrayDiff<String>>] = []
 
-        subject.sink { update in
+        let cancellable = subject.sink { update in
             receivedUpdates.append(update)
-        }.store(in: &cancellables)
+        }
 
         subject.updateElement(at: 1, with: "X")
 
-        XCTAssertEqual(receivedUpdates.count, 2)
-        XCTAssertEqual(receivedUpdates[1].value, ["A", "X", "C"])
+        #expect(receivedUpdates.count == 2)
+        #expect(receivedUpdates[1].value == ["A", "X", "C"])
 
         if case .change(let diff) = receivedUpdates[1].updateType,
             case .update(let index, let oldElement, let newElement) = diff
         {
-            XCTAssertEqual(index, 1)
-            XCTAssertEqual(oldElement, "B")
-            XCTAssertEqual(newElement, "X")
+            #expect(index == 1)
+            #expect(oldElement == "B")
+            #expect(newElement == "X")
         } else {
-            XCTFail("Should be update diff")
+            throw TestError("Should be update diff")
         }
+        
+        cancellable.cancel()
     }
 
-    func testMultipleOperations() {
+    @Test("Multiple operations test")
+    func testMultipleOperations() throws {
         let subject = DiffValueSubject<[String], ArrayDiff<String>>([])
         var receivedUpdates: [DiffValueUpdate<[String], ArrayDiff<String>>] = []
 
-        subject.sink { update in
+        let cancellable = subject.sink { update in
             receivedUpdates.append(update)
-        }.store(in: &cancellables)
+        }
 
         subject.insert("A", at: 0)
         subject.insert("B", at: 1)
@@ -134,11 +135,14 @@ final class ArrayDiffTests: XCTestCase {
         subject.remove(at: 1)
         subject.updateElement(at: 0, with: "X")
 
-        XCTAssertEqual(receivedUpdates.count, 6)  // 1 initial + 5 operations
-        XCTAssertEqual(subject.currentValue, ["X", "B"])
+        #expect(receivedUpdates.count == 6)  // 1 initial + 5 operations
+        #expect(subject.currentValue == ["X", "B"])
+        
+        cancellable.cancel()
     }
 
-    func testConcurrentOperations() {
+    @Test("Concurrent operations test")
+    func testConcurrentOperations() throws {
         let subject = DiffValueSubject<[Int], ArrayDiff<Int>>([])
 
         // Perform sequential insertions to test basic functionality
@@ -146,27 +150,29 @@ final class ArrayDiffTests: XCTestCase {
             subject.insert(i, at: 0)
         }
 
-        XCTAssertEqual(subject.currentValue.count, 5)
+        #expect(subject.currentValue.count == 5)
 
         // All numbers should be present (in reverse order due to inserting at 0)
         let finalNumbers = Set(subject.currentValue)
         let expectedNumbers = Set(0..<5)
-        XCTAssertEqual(finalNumbers, expectedNumbers)
+        #expect(finalNumbers == expectedNumbers)
     }
 
-    func testEmptyArrayOperations() {
+    @Test("Empty array operations test")
+    func testEmptyArrayOperations() throws {
         let subject = DiffValueSubject<[String], ArrayDiff<String>>([])
 
         // Insert into empty array
         subject.insert("First", at: 0)
-        XCTAssertEqual(subject.currentValue, ["First"])
+        #expect(subject.currentValue == ["First"])
 
         // Remove last element
         subject.remove(at: 0)
-        XCTAssertEqual(subject.currentValue, [])
+        #expect(subject.currentValue == [])
     }
 
-    func testThreadSafety() {
+    @Test("Thread safety test")
+    func testThreadSafety() throws {
         let subject = DiffValueSubject<[Int], ArrayDiff<Int>>([])
 
         // Test basic thread safety with sequential operations
@@ -176,14 +182,17 @@ final class ArrayDiffTests: XCTestCase {
         subject.insert(3, at: 0)
 
         // Should not crash and final state should be consistent
-        XCTAssertTrue(subject.currentValue.count >= 0)
-        XCTAssertEqual(subject.currentValue, [3, 1])
+        #expect(subject.currentValue.count >= 0)
+        #expect(subject.currentValue == [3, 1])
     }
 
-    func testTypeAliases() {
+    @Test("Type aliases test")
+    func testTypeAliases() throws {
         // DiffArraySubject を使用
         let diffArraySubject = DiffArraySubject<String>(["A", "B"])
         diffArraySubject.insert("C", at: 1)
-        XCTAssertEqual(diffArraySubject.currentValue, ["A", "C", "B"])
+        #expect(diffArraySubject.currentValue == ["A", "C", "B"])
     }
 }
+
+
