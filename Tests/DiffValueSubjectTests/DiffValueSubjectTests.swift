@@ -4,7 +4,7 @@ import Testing
 @testable import DiffValueSubject
 
 @Suite struct DiffValueSubjectTests {
-    
+
     @Test("Basic functionality test")
     func testDiffValueSubjectBasicFunctionality() throws {
         let subject = DiffValueSubject<Int, Int>(42)
@@ -227,5 +227,3 @@ import Testing
         cancellable.cancel()
     }
 }
-
-
