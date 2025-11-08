@@ -4,7 +4,7 @@ import Testing
 @testable import DiffValueSubject
 
 @Suite struct ArrayDiffTests {
-    
+
     @Test("Array insert test")
     func testArrayInsert() throws {
         let subject = DiffValueSubject<[String], ArrayDiff<String>>(["A", "B"])
@@ -36,7 +36,7 @@ import Testing
         } else {
             throw TestError("Second update should be insert diff")
         }
-        
+
         cancellable.cancel()
     }
 
@@ -62,7 +62,7 @@ import Testing
         } else {
             throw TestError("Should be remove diff")
         }
-        
+
         cancellable.cancel()
     }
 
@@ -89,7 +89,7 @@ import Testing
         } else {
             throw TestError("Should be move diff")
         }
-        
+
         cancellable.cancel()
     }
 
@@ -116,7 +116,7 @@ import Testing
         } else {
             throw TestError("Should be update diff")
         }
-        
+
         cancellable.cancel()
     }
 
@@ -137,7 +137,7 @@ import Testing
 
         #expect(receivedUpdates.count == 6)  // 1 initial + 5 operations
         #expect(subject.currentValue == ["X", "B"])
-        
+
         cancellable.cancel()
     }
 
@@ -194,5 +194,3 @@ import Testing
         #expect(diffArraySubject.currentValue == ["A", "C", "B"])
     }
 }
-
-
